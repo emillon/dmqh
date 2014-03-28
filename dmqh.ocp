@@ -23,6 +23,6 @@ begin program "dmqh_tests"
     ]
     requires = [
         "dmqh_engine"
-        "oUnit"
+        "alcotest"
     ]
 end

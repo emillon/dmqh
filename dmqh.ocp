@@ -2,4 +2,7 @@ begin program "dmqh"
     files = [
         "dmqh.ml"
     ]
+    requires = [
+        "sdl"
+    ]
 end

@@ -4,5 +4,6 @@ begin program "dmqh"
     ]
     requires = [
         "sdl"
+        "oUnit"
     ]
 end

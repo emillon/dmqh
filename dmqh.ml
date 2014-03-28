@@ -10,6 +10,38 @@ let tilecolor = 0x0000ffl
 
 type tile = T2 | T4 | T8 | T16 | T32 | T64 | T128 | T256 | T512 | T1024 | T2048
 
+let pr_tile = function
+  | T2 -> "2"
+  | T4 -> "4"
+  | T8 -> "8"
+  | T16 -> "16"
+  | T32 -> "32"
+  | T64 -> "64"
+  | T128 -> "128"
+  | T256 -> "256"
+  | T512 -> "512"
+  | T1024 -> "1024"
+  | T2048 -> "2048"
+
+exception Win
+
+let next_tile = function
+  | T2 -> T4
+  | T4 -> T8
+  | T8 -> T16
+  | T16 -> T32
+  | T32 -> T64
+  | T64 -> T128
+  | T128 -> T256
+  | T256 -> T512
+  | T512 -> T1024
+  | T1024 -> T2048
+  | T2048 -> raise Win
+
+let pr_tileo = function
+  | None -> "."
+  | Some t -> pr_tile t
+
 let all_tiles =
   [T2 ; T4 ; T8 ; T16 ; T32 ; T64 ; T128 ; T256 ; T512 ; T1024 ; T2048]
 
@@ -98,4 +130,51 @@ let main () =
     print_endline "tick"
   done
 
-let _ = main ()
+let rec span p = function
+  | [] -> ([], [])
+  | x::xs when p x -> let (t, f) = span p xs in (x::t, f)
+  | xs -> ([], xs)
+
+let gravity l =
+  let (n, o) = span (fun x -> x = None) l
+  in
+  o @ n
+
+let rec merge_tiles = function
+  | (Some x)::(Some x')::xs when x = x' -> Some (next_tile x):: (merge_tiles xs) @ [None]
+  | x::xs -> x::merge_tiles xs
+  | [] -> []
+
+let move_row l =
+  merge_tiles (gravity l)
+
+let run_tests () =
+  let p_couple prn (x, y) =
+    "(" ^ prn x ^ ", " ^ prn y ^ ")"
+  in
+  let p_list prn l =
+    "[" ^ String.concat " " (List.map prn l) ^ "]"
+  in
+  let tc (input, exp) =
+    let printer l =
+      p_list pr_tileo l
+    in
+    OUnit.assert_equal ~printer exp (move_row input)
+  in
+  let printer = p_couple (p_list string_of_int) in
+  OUnit.assert_equal ~printer ([1;2;3], [4;5]) (span (fun x -> x <= 3) [1;2;3;4;5]);
+  List.iter tc
+    [ [None;None;None;None], [None;None;None;None]
+    ; [None;Some T2;None;None], [Some T2;None;None;None]
+    ; [Some T2;Some T2;None;None], [Some T4;None;None;None]
+    ; [None;Some T2;Some T2;None], [Some T4;None;None;None]
+    ; [Some T16;Some T2;Some T2;None], [Some T16;Some T4;None;None]
+    ; [Some T2;Some T2;Some T4;Some T4], [Some T4;Some T8;None;None]
+    ; [Some T2;Some T2;Some T2;None], [Some T4;Some T2;None;None]
+    ];
+  print_endline "OK"
+
+let _ =
+  match Sys.argv with
+  | [| _ ; "-t" |] -> run_tests ()
+  | _ -> main ()

@@ -17,7 +17,7 @@ begin program "dmqh"
     ]
 end
 
-begin program "dmqh_test"
+begin program "dmqh_tests"
     files = [
         "tests.ml"
     ]

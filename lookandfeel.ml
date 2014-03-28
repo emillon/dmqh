@@ -28,3 +28,9 @@ let tilecolor = function
   | T32 | T64 | T128 -> c4
   | T256 | T512 | T1024 | T2048 -> c5
 
+let rect_at i j =
+  let x = border + i * (cell_w + inter_cell) in
+  let y = border + j * (cell_h + inter_cell) in
+  let w = cell_w in
+  let h = cell_h in
+  (x, y, w, h)

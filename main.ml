@@ -1,11 +1,8 @@
 open Dmqh
 open Lookandfeel
 
-let rect_at i j =
-  let x = border + i * (cell_w + inter_cell) in
-  let y = border + j * (cell_h + inter_cell) in
-  let w = cell_w in
-  let h = cell_h in
+let sdl_rect_at i j =
+  let (x, y, w, h) = rect_at i j in
   Sdlvideo.rect ~x ~y ~w ~h
 
 let draw_tile =
@@ -13,7 +10,7 @@ let draw_tile =
   init ();
   let font = open_font "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSansMono.ttf" 60 in
   fun win i j t ->
-    let rect = rect_at i j in
+    let rect = sdl_rect_at i j in
     Sdlvideo.fill_rect ~rect win (tilecolor t);
     let msg = pr_tile t in
     let text = render_text_solid font msg ~fg:fontcolor in
@@ -23,7 +20,7 @@ let clear win =
   Sdlvideo.fill_rect win bgcolor
 
 let draw_empty win i j =
-  let rect = rect_at i j in
+  let rect = sdl_rect_at i j in
   Sdlvideo.fill_rect ~rect win emptycolor
 
 let draw_board win board =

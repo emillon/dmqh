@@ -6,6 +6,7 @@ let win_w = 2 * border + 4 * cell_w + 3 * inter_cell
 let win_h = 2 * border + 4 * cell_h + 3 * inter_cell
 let bgcolor = 0xff0000l
 let emptycolor = 0x00ff00l
+let tilecolor = 0x0000ffl
 
 type tile = T2 | T4 | T8 | T16 | T32 | T64 | T128 | T256 | T512 | T1024 | T2048
 
@@ -54,11 +55,12 @@ let draw_empty win i j =
   Sdlvideo.fill_rect ~rect win emptycolor
 
 let draw_tile win i j t =
-  assert false
+  let rect = rect_at i j in
+  Sdlvideo.fill_rect ~rect win tilecolor
 
 let draw_board win board =
-  for i = 1 to 4 do
-    for j = 1 to 4 do
+  for i = 0 to 3 do
+    for j = 0 to 3 do
       match board.(i).(j) with
       | None -> draw_empty win i j
       | Some t -> draw_tile win i j t
@@ -71,22 +73,29 @@ type event =
   | Move of direction
 
 let wait_event win =
-  assert false
+  let open Sdlkey in
+  Sdlevent.pump();
+  match Sdlevent.wait_event () with
+  | Sdlevent.KEYDOWN { Sdlevent.keysym = KEY_LEFT } -> Some (Move L)
+  | _ -> None
 
-let move d =
+let move b d =
   assert false
 
 let main () =
   Sdl.init ~auto_clean:true [`VIDEO];
   let win = Sdlvideo.set_video_mode ~w:win_w ~h:win_h [] in
   let b = empty_board () in
+  add_random b;
   while true do
-    add_random b;
     clear win;
     draw_board win b;
+    Sdlvideo.flip win;
     begin match wait_event win with
-    | Move d -> move d
-    end
+    | Some (Move d) -> (move b d; add_random b)
+    | None -> ()
+    end;
+    print_endline "tick"
   done
 
 let _ = main ()

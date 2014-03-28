@@ -1,4 +1,4 @@
-begin program "dmqh"
+begin library "dmqh_engine"
     files = [
         "dmqh.ml"
     ]
@@ -6,5 +6,14 @@ begin program "dmqh"
         "sdl"
         "sdl.sdlttf"
         "oUnit"
+    ]
+end
+
+begin program "dmqh"
+    files = [
+        "main.ml"
+    ]
+    requires = [
+        "dmqh_engine"
     ]
 end

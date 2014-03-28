@@ -14,9 +14,15 @@ let draw_empty ctx i j =
 let draw_tile ctx i j t =
   let (x, y, w, h) = Lookandfeel.rect_at i j in
   ctx##fillStyle <- color (Lookandfeel.tilecolor t);
-  ctx##fillRect (float x, float y, float w, float h)
+  ctx##fillRect (float x, float y, float w, float h);
+  ctx##fillStyle <- js"black";
+  ctx##fillText (js(Dmqh.pr_tile t),
+    float x +. float Lookandfeel.cell_w /. 2.,
+    float y +. float Lookandfeel.cell_h /. 2.)
 
 let draw_board ctx board =
+  ctx##fillStyle <- color (Lookandfeel.bgcolor);
+  ctx##fillRect (0., 0., float Lookandfeel.win_w, float Lookandfeel.win_h);
   for i = 0 to 3 do
     for j = 0 to 3 do
       match board.(i).(j) with
@@ -25,7 +31,14 @@ let draw_board ctx board =
     done
   done
 
-let ev_to_dir _ = Some (Dmqh.D)
+let ev_to_dir e =
+  let open Dmqh in
+  match e##keyCode with
+  | 37 -> Some L
+  | 38 -> Some U
+  | 39 -> Some R
+  | 40 -> Some D
+  | _ -> None
 
 let main () =
   let document = H.document in

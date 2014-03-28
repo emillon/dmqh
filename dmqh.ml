@@ -57,9 +57,11 @@ let random_list l =
 let random_tile () =
   random_list all_tiles
 
+let (>>=) l f = List.concat (List.map f l)
+
+let all_idx = [0;1;2;3]
+
 let random_avail b =
-  let (>>=) l f = List.concat (List.map f l) in
-  let all_idx = [0;1;2;3] in
   let all_idx2 =
     all_idx >>= fun i ->
     all_idx >>= fun j ->
@@ -111,25 +113,6 @@ let wait_event win =
   | Sdlevent.KEYDOWN { Sdlevent.keysym = KEY_LEFT } -> Some (Move L)
   | _ -> None
 
-let move b d =
-  assert false
-
-let main () =
-  Sdl.init ~auto_clean:true [`VIDEO];
-  let win = Sdlvideo.set_video_mode ~w:win_w ~h:win_h [] in
-  let b = empty_board () in
-  add_random b;
-  while true do
-    clear win;
-    draw_board win b;
-    Sdlvideo.flip win;
-    begin match wait_event win with
-    | Some (Move d) -> (move b d; add_random b)
-    | None -> ()
-    end;
-    print_endline "tick"
-  done
-
 let rec span p = function
   | [] -> ([], [])
   | x::xs when p x -> let (t, f) = span p xs in (x::t, f)
@@ -147,6 +130,25 @@ let rec merge_tiles = function
 
 let move_row l =
   merge_tiles (gravity l)
+
+let move_list b xs =
+  let elems = List.map (fun (i, j) -> b.(i).(j)) xs in
+  let elems' = move_row elems in
+  List.iter2 (fun (i, j) t -> b.(i).(j) <- t) xs elems'
+
+let row x = List.map (fun i -> (i, x)) all_idx
+let col x = List.map (fun j -> (x, j)) all_idx
+
+let move b d =
+  let all_cols = List.map col all_idx in
+  let all_rows = List.map row all_idx in
+  let lists = match d with
+    | U -> all_cols
+    | L -> all_rows
+    | D -> List.map List.rev all_cols
+    | R -> List.map List.rev all_rows
+  in
+  List.iter (move_list b) lists
 
 let run_tests () =
   let p_couple prn (x, y) =
@@ -173,6 +175,22 @@ let run_tests () =
     ; [Some T2;Some T2;Some T2;None], [Some T4;Some T2;None;None]
     ];
   print_endline "OK"
+
+let main () =
+  Sdl.init ~auto_clean:true [`VIDEO];
+  let win = Sdlvideo.set_video_mode ~w:win_w ~h:win_h [] in
+  let b = empty_board () in
+  add_random b;
+  while true do
+    clear win;
+    draw_board win b;
+    Sdlvideo.flip win;
+    begin match wait_event win with
+    | Some (Move d) -> (move b d; add_random b)
+    | None -> ()
+    end;
+    print_endline "tick"
+  done
 
 let _ =
   match Sys.argv with

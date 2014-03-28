@@ -3,7 +3,6 @@ begin library "dmqh_engine"
         "dmqh.ml"
     ]
     requires = [
-        "oUnit"
     ]
 end
 
@@ -15,5 +14,15 @@ begin program "dmqh"
         "sdl"
         "sdl.sdlttf"
         "dmqh_engine"
+    ]
+end
+
+begin program "dmqh_test"
+    files = [
+        "tests.ml"
+    ]
+    requires = [
+        "dmqh_engine"
+        "oUnit"
     ]
 end

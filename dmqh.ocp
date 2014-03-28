@@ -1,6 +1,7 @@
 begin library "dmqh_engine"
     files = [
         "dmqh.ml"
+        "lookandfeel.ml"
     ]
     requires = [
     ]

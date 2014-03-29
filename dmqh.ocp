@@ -38,6 +38,9 @@ end
 begin
     generated = true
 
+    begin program "camlp4o"
+    end
+
     begin objects "js_of_ocaml.camlp4-syntax.objects"
         dirname = [ "%{js_of_ocaml.syntax_SRC_DIR}%" ]
         files = [ "pa_js.ml" ]

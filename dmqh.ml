@@ -14,6 +14,7 @@ let pr_tile = function
   | T2048 -> "2048"
 
 exception Win
+exception Lose
 
 let next_tile = function
   | T2 -> T4
@@ -52,7 +53,10 @@ let random_avail b =
     [(i, j)]
   in
   let avail = List.filter (fun (i, j) -> b.(i).(j) = None) all_idx2 in
-  random_list avail
+  if avail = [] then
+    raise Lose
+  else
+    random_list avail
 
 let add_random b =
   let (i, j) = random_avail b in
@@ -62,6 +66,7 @@ type direction = U | D | L | R
 
 type event =
   | Move of direction
+  | New_game
 
 let rec partition p = function
   | [] -> ([], [])

@@ -31,33 +31,57 @@ let draw_board ctx board =
     done
   done
 
-let ev_to_dir e =
+let parse_ev e =
   let open Dmqh in
   match e##keyCode with
-  | 37 -> Some L
-  | 38 -> Some U
-  | 39 -> Some R
-  | 40 -> Some D
+  | 37 -> Some (Move L)
+  | 38 -> Some (Move U)
+  | 39 -> Some (Move R)
+  | 40 -> Some (Move D)
+  | 82 -> Some New_game
   | _ -> None
 
+let rec play_game ctx =
+  let b = Dmqh.empty_board () in
+  Dmqh.add_random b;
+  draw_board ctx b;
+  H.document##onkeydown <- H.handler (fun e ->
+    let handle_lose () =
+      ctx##fillStyle <- js"black";
+      ctx##fillText (js"You lose!",
+        float Lookandfeel.win_w /. 2.,
+        float Lookandfeel.win_h /. 2.);
+      H.document##onkeydown <- H.handler (fun e ->
+        begin match parse_ev e with
+          | Some Dmqh.New_game -> play_game ctx
+          | _ -> ();
+        end;
+        Js._true
+      )
+    in
+    let handle_move d =
+      try
+        Dmqh.move b d;
+        Dmqh.add_random b;
+        draw_board ctx b
+      with Dmqh.Lose -> handle_lose ()
+    in
+    begin match parse_ev e with
+    | None -> ()
+    | Some (Dmqh.Move d) -> handle_move d
+    | Some Dmqh.New_game -> play_game ctx
+    end; Js._true)
+
 let main () =
-  let document = H.document in
   let game =
-    Js.Opt.get (document##getElementById(js"game"))
+    Js.Opt.get (H.document##getElementById(js"game"))
       (fun () -> assert false)
   in
-  let canvas = H.createCanvas document in
+  let canvas = H.createCanvas H.document in
   canvas##width <- Lookandfeel.win_w;
   canvas##height <- Lookandfeel.win_h;
   Dom.appendChild game canvas;
   let ctx = canvas##getContext (H._2d_) in
-  let b = Dmqh.empty_board () in
-  Dmqh.add_random b;
-  draw_board ctx b;
-  document##onkeydown <- H.handler (fun e ->
-    begin match ev_to_dir e with
-    | None -> ()
-    | Some d -> Dmqh.move b d; Dmqh.add_random b; draw_board ctx b
-    end; Js._true)
+  play_game ctx
 
 let _ = main ()
